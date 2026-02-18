@@ -6,13 +6,13 @@
 /*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:32:39 by marrandr          #+#    #+#             */
-/*   Updated: 2026/02/18 14:56:16 by marrandr         ###   ########.fr       */
+/*   Updated: 2026/02/18 18:13:07 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-Server::Server(int port) : _serverFd(-1),  _port(port)
+Server::Server(int port, const std::string &pass) : _serverFd(-1), _pass(pass) ,_port(port)
 {
 }
 
@@ -33,50 +33,49 @@ int	Server::creatServerSocket(int port)
 		std::cerr << "Error to creat socket" << std::endl;
 		exit(1);
 	}
-	std::cout << "Socket creat \n";
+	std::cout << "[INFO] : Socket creat \n";
 	//init data sockaddr_in for bind
 	sin.sin_port = htons(port);
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
 	if (bind(serverSocket, (struct sockaddr *)&sin, sizeof(sin)) == -1)
 	{
-		std::cerr << "Error : can't bind" << std::endl;
+		std::cerr << "[Error] : can't init bind" << std::endl;
 		close(serverSocket);
 		exit(1);
 	}
-	std::cout << "Bind init \n";
+	std::cout << "[INFO] : Bind init \n";
 	//listen
 	if (listen(serverSocket, MAX_CLIENT) == -1)
 	{
-		std::cerr << "Error : can't listen" << std::endl;
+		std::cerr << "[Error] : can't init listen" << std::endl;
 		close(serverSocket);
 		exit(1);
 	}
-	std::cout << "Listen OK \n";
+	std::cout << "[INFO] : Listen OK \n";
 	return (serverSocket);
 }
 
 void	Server::_newConnection()
 {
-	static int			idxClt = 1;
 	int					clientSocket = -1;
 	struct sockaddr_in	sinClient;
-	unsigned int		sizeLen;
+	unsigned int		sizeLen = sizeof(sinClient);
 	if (_allClients.size() > MAX_CLIENT)
 		return ;
 	clientSocket = accept(_serverFd, (struct sockaddr *)&sinClient, &sizeLen);
 	if (clientSocket == -1)
 	{
 		_closeAllSocket();
-		std::cerr << "Error : Accept\n";
+		std::cerr << "[Error] : Accept have a problem\n";
 		return ;
 	}
-	std::cout << "A client num "<< idxClt++ << " connect\n";
+	std::cout << "[INFO] : New client try connect\n";
 	Client client(clientSocket);
 	struct pollfd pFdClient;
 	_allClients.push_back(client);
 	pFdClient.fd = clientSocket;
-	pFdClient.events = POLL_IN;
+	pFdClient.events = POLLIN;
 	pFdClient.revents = 0;
 	_allPollFd.push_back(pFdClient);
 }
@@ -96,7 +95,14 @@ void	Server::_recevDataClient(int fdClient)
 	client = findClient(fdClient);
 	if (!client)
 		return ;
-	std::cout << "Recever by client : " << buffer << std::endl;
+	client->set_recvBuffer(buffer);
+	std::cout << "[INFO] : Message receved by client" << std::endl;
+}
+
+void	Server::_sendToClient(int fdClient, const std::string &msg)
+{
+	(void)fdClient;
+	(void)msg;
 }
 
 void	Server::_removeClient(int fdClient)
@@ -105,15 +111,15 @@ void	Server::_removeClient(int fdClient)
 	for (i = 0; i < (int)_allPollFd.size(); i++)
 		if (_allPollFd[i].fd == fdClient)
 			break;
-	if (i > 0)
+	if (i >= 0)
 		_allPollFd.erase(_allPollFd.begin() + i);
 	i = -1;
 	for (i = 0; i < (int)_allClients.size(); i++)
 		if (_allClients[i].getFd() == fdClient)
 			break;
-	if (i > 0)
+	if (i >= 0)
 		_allClients.erase(_allClients.begin() + i);
-	std::cout << "A client delete \n";
+	std::cout << "[INFO] : A client deleted \n";
 	close(fdClient);
 }
 
@@ -140,7 +146,7 @@ void	Server::run()
 		retPoll = poll(&_allPollFd[0], _allPollFd.size(), -1);
 		if (retPoll < 0)
 		{
-			std::cerr << "Error Poll\n";
+			std::cerr << "[Error] Poll faild \n";
 			break;
 		}
 		for (unsigned int i = 0; i < _allPollFd.size(); i++)
@@ -151,12 +157,12 @@ void	Server::run()
 			{
 				if (i == 0)
 				{
-					std::cerr << "Error : Server\n";
+					std::cerr << "[Error] : Server have bug\n";
 					return ;
 				}
 				else
 				{
-					std::cerr << "Error : Client\n";
+					std::cerr << "[Error] : Client have bug\n";
 					_removeClient(_allPollFd[i].fd);
 					continue;
 				}
@@ -165,14 +171,11 @@ void	Server::run()
 			{
 				if (i == 0)
 				{
-					std::cout << "A client try to connect\n";
 					_newConnection();
 				}
 				else
 				{
-					std::cout << "Receve msg by fd ""\n";
 					_recevDataClient(_allPollFd[i].fd);
-					i--;
 				}
 			}
 		}

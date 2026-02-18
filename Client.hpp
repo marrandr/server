@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: harinrak <harinrak@student.42antananari    +#+  +:+       +#+        */
+/*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 07:17:08 by harinrak          #+#    #+#             */
-/*   Updated: 2026/02/17 09:55:50 by harinrak         ###   ########.fr       */
+/*   Updated: 2026/02/18 18:12:33 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +41,13 @@ class Client{
     const std::string& getNickName()const;
     const std::string& getUsrName()const;
     const std::string& getRname()const;
-    const std::string& getState()const;
+    const StatusClient& getState()const;
     const std::set<Channel*>&getChannels()const;
+    const std::string&get_recBufer()const;
+    const std::string&get_sendBuffer()const;
 
+    void set_recvBuffer(const std::string& rcv);
+    void set_sendBuffer(const std::string& send);
     void setNickName(const std::string& nick);
     void setUsrName(const std::string& user);
     void setState(StatusClient stat);
@@ -51,7 +55,7 @@ class Client{
 
     void join(Channel*c);
     void leave(Channel*c);
-    
+
 };
 
 

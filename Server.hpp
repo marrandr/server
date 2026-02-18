@@ -6,7 +6,7 @@
 /*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 18:09:21 by marrandr          #+#    #+#             */
-/*   Updated: 2026/02/18 12:29:05 by marrandr         ###   ########.fr       */
+/*   Updated: 2026/02/18 17:56:34 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,17 +33,18 @@ class Server
 {
 	private:
 		int					 		_serverFd;
+		const std::string			_pass;
 		int							_port;
 		std::vector<Client>			_allClients;
 		std::vector<struct pollfd>	_allPollFd;
 		void						_newConnection();
 		void						_recevDataClient(int fdClient);
+		void						_sendToClient(int fdClient, const std::string &msg);
 		void						_removeClient(int fdClient);
 		void						_closeAllSocket();
 
-
 	public:
-		Server(int port);
+		Server(int port, const std::string &pwd);
 		~Server();
 		int		creatServerSocket(int port);
 		void	init();
@@ -53,7 +54,6 @@ class Server
 };
 
 void	serverUsage(const std::string &ServerName);
-void	checkArgServer(const std::string &serverName, const std::string &port);
-
+void	checkArgServer(const std::string &serverName, const std::string &port,  const std::string &pass);
 
 #endif

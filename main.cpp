@@ -6,7 +6,7 @@
 /*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 18:09:14 by marrandr          #+#    #+#             */
-/*   Updated: 2026/02/18 12:06:33 by marrandr         ###   ########.fr       */
+/*   Updated: 2026/02/18 17:25:50 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,11 @@ int main(int ac, char *av[])
 		serverUsage(av[0]);
 		return (1);
 	}
-	checkArgServer(av[0], av[1]);
+	checkArgServer(av[0], av[1], av[2]);
 	port = std::atoi(av[1]);
 	try
 	{
-		Server	server(port);
+		Server	server(port, av[2]);
 		server.init();
 		server.run();
 	}
