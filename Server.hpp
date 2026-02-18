@@ -6,7 +6,7 @@
 /*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 18:09:21 by marrandr          #+#    #+#             */
-/*   Updated: 2026/02/17 18:09:22 by marrandr         ###   ########.fr       */
+/*   Updated: 2026/02/18 12:29:05 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 #include <netinet/ip.h>
 #include <signal.h>
 #include <poll.h>
+#include <cstdlib>
+
 #define BUFFER_SIZE 1048576
 #define MAX_CLIENT SOMAXCONN
 
