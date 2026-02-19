@@ -6,15 +6,14 @@
 /*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:32:39 by marrandr          #+#    #+#             */
-/*   Updated: 2026/02/18 18:13:07 by marrandr         ###   ########.fr       */
+/*   Updated: 2026/02/19 18:00:18 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 Server::Server(int port, const std::string &pass) : _serverFd(-1), _pass(pass) ,_port(port)
-{
-}
+{}
 
 Server::~Server()
 {
@@ -23,6 +22,7 @@ Server::~Server()
 
 int	Server::creatServerSocket(int port)
 {
+	int	opt = 1;
 	int serverSocket;
 	struct sockaddr_in sin;
 
@@ -31,6 +31,13 @@ int	Server::creatServerSocket(int port)
 	if (serverSocket == -1)
 	{
 		std::cerr << "Error to creat socket" << std::endl;
+		exit(1);
+	}
+	//Prepare Bind
+	if (setsockopt(serverSocket, SOL_SOCKET, SOCK_STREAM, &opt, sizeof(opt)) == -1)
+	{
+		std::cerr << "[Error] : can't prepare bind by Setockopt" << std::endl;
+		close(serverSocket);
 		exit(1);
 	}
 	std::cout << "[INFO] : Socket creat \n";
@@ -56,73 +63,6 @@ int	Server::creatServerSocket(int port)
 	return (serverSocket);
 }
 
-void	Server::_newConnection()
-{
-	int					clientSocket = -1;
-	struct sockaddr_in	sinClient;
-	unsigned int		sizeLen = sizeof(sinClient);
-	if (_allClients.size() > MAX_CLIENT)
-		return ;
-	clientSocket = accept(_serverFd, (struct sockaddr *)&sinClient, &sizeLen);
-	if (clientSocket == -1)
-	{
-		_closeAllSocket();
-		std::cerr << "[Error] : Accept have a problem\n";
-		return ;
-	}
-	std::cout << "[INFO] : New client try connect\n";
-	Client client(clientSocket);
-	struct pollfd pFdClient;
-	_allClients.push_back(client);
-	pFdClient.fd = clientSocket;
-	pFdClient.events = POLLIN;
-	pFdClient.revents = 0;
-	_allPollFd.push_back(pFdClient);
-}
-
-void	Server::_recevDataClient(int fdClient)
-{
-	char	buffer[BUFFER_SIZE] = {0};
-	Client	*client = NULL;
-
-	ssize_t retRecv = recv(fdClient, buffer, BUFFER_SIZE - 1, 0);
-	if (retRecv <= 0)
-	{
-		_removeClient(fdClient);
-		return;
-	}
-	buffer[retRecv] = 0;
-	client = findClient(fdClient);
-	if (!client)
-		return ;
-	client->set_recvBuffer(buffer);
-	std::cout << "[INFO] : Message receved by client" << std::endl;
-}
-
-void	Server::_sendToClient(int fdClient, const std::string &msg)
-{
-	(void)fdClient;
-	(void)msg;
-}
-
-void	Server::_removeClient(int fdClient)
-{
-	int	i = -1;
-	for (i = 0; i < (int)_allPollFd.size(); i++)
-		if (_allPollFd[i].fd == fdClient)
-			break;
-	if (i >= 0)
-		_allPollFd.erase(_allPollFd.begin() + i);
-	i = -1;
-	for (i = 0; i < (int)_allClients.size(); i++)
-		if (_allClients[i].getFd() == fdClient)
-			break;
-	if (i >= 0)
-		_allClients.erase(_allClients.begin() + i);
-	std::cout << "[INFO] : A client deleted \n";
-	close(fdClient);
-}
-
 void	Server::init()
 {
 	std::cout << "----------Init server---------------\n";
@@ -131,7 +71,7 @@ void	Server::init()
 	struct pollfd pFdServer;
 
 	pFdServer.fd = _serverFd;
-	pFdServer.events = POLLIN;
+	pFdServer.events = POLLIN | POLLOUT;
 	_allPollFd.push_back(pFdServer);
 	std::cout << "------------------------------------\n";
 }
@@ -139,7 +79,8 @@ void	Server::init()
 void	Server::run()
 {
 	std::cout << "-----------Run server----------------\n";
-	int	retPoll = -1;
+	int		retPoll = -1;
+	Client	*client = NULL;
 
 	while (true)
 	{
@@ -178,33 +119,13 @@ void	Server::run()
 					_recevDataClient(_allPollFd[i].fd);
 				}
 			}
+			if (_allPollFd[i].revents & POLLOUT)
+			{
+				client = findClient(_allPollFd[i].fd);
+				if (client)
+					client->trySendMessageOnBuffer();
+			}
 		}
 	}
 	std::cout << "------------------------------------\n";
-}
-
-void	Server::clear()
-{
-	std::cout << "----------Close server--------------\n";
-	_closeAllSocket();
-	_allClients.clear();
-	_allPollFd.clear();
-}
-
-void	Server::_closeAllSocket()
-{
-	for (unsigned int i = 0; i < _allPollFd.size(); i++)
-		if (_allPollFd[i].fd > 0)
-			close (_allPollFd[i].fd);
-}
-
-
-Client	*Server::findClient(int fd) const
-{
-	for (unsigned int i = 0; i < _allClients.size(); i++)
-	{
-		if (_allClients[i].getFd() == fd)
-			return ((Client *)&_allClients[i]);
-	}
-	return (NULL);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: harinrak <harinrak@student.42antananari    +#+  +:+       +#+        */
+/*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 13:04:09 by harinrak          #+#    #+#             */
-/*   Updated: 2026/02/19 11:53:14 by harinrak         ###   ########.fr       */
+/*   Updated: 2026/02/19 18:34:14 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,3 +101,21 @@ void Client::tryRegister() {
     if (_state == AUTHENTICATED&&!_nick_name.empty()&&!_usr_name.empty())
         _state = REGISTERED;
 }
+
+void	Client::trySendMessageOnBuffer()
+{
+	if (_sendBuffer.empty())
+		return ;
+	int	lenBuff = _sendBuffer.length();
+	int	retSend = send(fd, (void *)&_sendBuffer, _sendBuffer.length(), MSG_NOSIGNAL);
+	if (retSend == -1)
+	{
+		std::cerr << "[WARNING] : A client deconnect\n";
+		close(fd);
+	}
+	else if (retSend < lenBuff)
+		_sendBuffer = _sendBuffer.substr(lenBuff - retSend);
+	else
+		_sendBuffer.clear();
+}
+

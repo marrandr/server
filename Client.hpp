@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: harinrak <harinrak@student.42antananari    +#+  +:+       +#+        */
+/*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 07:17:08 by harinrak          #+#    #+#             */
-/*   Updated: 2026/02/19 11:53:14 by harinrak         ###   ########.fr       */
+/*   Updated: 2026/02/19 18:24:46 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,11 @@
 #define CLIENT_HPP
 
 #include <string>
+#include <iostream>
 #include <set>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <errno.h>
 
 enum StatusClient{
     NON_AUTH,
@@ -39,7 +43,7 @@ class Client{
     Client(int fd);
 
     void catrecvBuffer(const std::string&to_cat);
- 
+
     int getFd()const;
     const std::string& getNickName()const;
     const std::string& getUsrName()const;
@@ -65,9 +69,11 @@ class Client{
 
 
     bool isAuthenticated() const;
-    const std::string& extractrcv_buffer()const; 
+    const std::string& extractrcv_buffer()const;
     void tryRegister();
-    
+
+	void	trySendMessageOnBuffer();
+
 };
 
 
