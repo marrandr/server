@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
+/*   By: harinrak <harinrak@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 07:17:08 by harinrak          #+#    #+#             */
-/*   Updated: 2026/02/18 18:12:33 by marrandr         ###   ########.fr       */
+/*   Updated: 2026/02/19 11:53:14 by harinrak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class Channel;
 class Client{
     private:
     int fd;
+    std::string _pass_word;
     std::string _nick_name;
     std::string _usr_name;
     std::string _r_name;
@@ -37,6 +38,8 @@ class Client{
     public:
     Client(int fd);
 
+    void catrecvBuffer(const std::string&to_cat);
+ 
     int getFd()const;
     const std::string& getNickName()const;
     const std::string& getUsrName()const;
@@ -52,10 +55,19 @@ class Client{
     void setUsrName(const std::string& user);
     void setState(StatusClient stat);
     void setRname(const std::string& real);
+    void setPassword(const std::string& pass);
 
-    void join(Channel*c);
-    void leave(Channel*c);
+    bool in_channel(Channel*ch)const;
+    void joinChannel(Channel*ch);
+    void leaveChannel(Channel*ch);
+    void leaveAllChannel();
+    size_t get_sizeAllchannel()const;
 
+
+    bool isAuthenticated() const;
+    const std::string& extractrcv_buffer()const; 
+    void tryRegister();
+    
 };
 
 
