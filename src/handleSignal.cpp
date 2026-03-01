@@ -1,18 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   serverUsage.cpp                                    :+:      :+:    :+:   */
+/*   handleSignal.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/17 18:09:25 by marrandr          #+#    #+#             */
-/*   Updated: 2026/02/18 12:35:08 by marrandr         ###   ########.fr       */
+/*   Created: 2026/02/25 16:48:57 by marrandr          #+#    #+#             */
+/*   Updated: 2026/02/25 17:02:25 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "../include/handleSignal.hpp"
 
-void serverUsage(const std::string &ServerName)
+void	handleSignal(int sig)
 {
-	std::cerr << "Usage "<< ServerName << "port(0 -> 65535) password" << std::endl;
+	if (sig == SIGQUIT || sig == SIGINT || sig == SIGTERM)
+		gRun = 0;
 }
+
+

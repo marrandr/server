@@ -6,36 +6,39 @@
 /*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:11:47 by marrandr          #+#    #+#             */
-/*   Updated: 2026/02/19 17:14:04 by marrandr         ###   ########.fr       */
+/*   Updated: 2026/03/01 09:54:07 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "../include/Server.hpp"
 
-void	Server::clear()
+void	Server::removeFdInPoll(int fd)
+{
+	for (size_t i = 0; i < _allPollFd.size(); i++)
+	{
+		if (_allPollFd[i].fd == fd)
+		{
+			_allPollFd.erase(_allPollFd.begin() + i);
+			return;
+		}
+	}
+}
+
+
+void	Server::clearData()
 {
 	std::cout << "----------Close server--------------\n";
 	_closeAllSocket();
-	_allClients.clear();
+	_cltManager.clear();
+	_channelManager.clear();
+	//std::map<std::string, Channel*>::iterator itChan;
+	//for (itChan = .begin(); itChan != _allChannelByName.end(); ++itChan)
+	//{
+	//	if (itChan->second)
+	//		delete itChan->second;
+	//}
 	_allPollFd.clear();
-}
-
-void	Server::_removeClient(int fdClient)
-{
-	int	i = -1;
-	for (i = 0; i < (int)_allPollFd.size(); i++)
-		if (_allPollFd[i].fd == fdClient)
-			break;
-	if (i >= 0)
-		_allPollFd.erase(_allPollFd.begin() + i);
-	i = -1;
-	for (i = 0; i < (int)_allClients.size(); i++)
-		if (_allClients[i].getFd() == fdClient)
-			break;
-	if (i >= 0)
-		_allClients.erase(_allClients.begin() + i);
-	std::cout << "[INFO] : A client deleted \n";
-	close(fdClient);
+	//_allChannelByName.clear();
 }
 
 void	Server::_closeAllSocket()
@@ -45,12 +48,7 @@ void	Server::_closeAllSocket()
 			close (_allPollFd[i].fd);
 }
 
-Client	*Server::findClient(int fd) const
+const Config& Server::getConfig() const
 {
-	for (unsigned int i = 0; i < _allClients.size(); i++)
-	{
-		if (_allClients[i].getFd() == fd)
-			return ((Client *)&_allClients[i]);
-	}
-	return (NULL);
+	return (_config);
 }

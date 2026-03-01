@@ -6,14 +6,20 @@
 /*   By: marrandr <marrandr@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 18:09:14 by marrandr          #+#    #+#             */
-/*   Updated: 2026/02/18 17:25:50 by marrandr         ###   ########.fr       */
+/*   Updated: 2026/02/27 11:10:43 by marrandr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "../include/Server.hpp"
+#include "../include/handleSignal.hpp"
+
+sig_atomic_t gRun = 1;
 
 int main(int ac, char *av[])
 {
+	signal(SIGQUIT, handleSignal);
+	signal(SIGTERM, handleSignal);
+	signal(SIGINT, handleSignal);
 	int	port = -1;
 
 	if (ac != 3)
@@ -25,13 +31,15 @@ int main(int ac, char *av[])
 	port = std::atoi(av[1]);
 	try
 	{
-		Server	server(port, av[2]);
+		Config	config(port, av[0], av[2]);
+		Server	server(config);
 		server.init();
 		server.run();
+		server.stop();
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		Logger::log(ERROR, e.what());
 	}
 
 	return (0);
